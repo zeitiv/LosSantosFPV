@@ -18,7 +18,7 @@
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>Los Santos FPV</Product>
     <Description>Liftoff-style FPV drone for GTA V story mode, flown with an RC radio or gamepad (ScriptHookVDotNet v3).</Description>
-    <Copyright>Copyright (c) 2026 Argex</Copyright>
+    <Copyright>Copyright (c) 2026 zeitiv</Copyright>
 
     <!-- Where ScriptHookVDotNet3.dll is: your game folder by default; CI passes -p:ShvdnDir=<downloaded release>. -->
     <GtaDir Condition="'$(GtaDir)' == ''">C:\Program Files\Rockstar Games\Grand Theft Auto V Enhanced</GtaDir>

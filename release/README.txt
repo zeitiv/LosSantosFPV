@@ -137,7 +137,7 @@ Anything else
 
 CREDITS
 -------
-Mod by Argex. Built with AI assistance.
+Mod by zeitiv. Built with AI assistance.
 Flight model is a clean-room reimplementation of Liftoff's drone physics. No game code or assets are
 included. Uses Script Hook V (Alexander Blade) and ScriptHookVDotNet Enhanced (Chiheb-Bacha and the SHVDN
 team).

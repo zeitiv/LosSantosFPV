@@ -69,6 +69,6 @@ To bump the minor or major version, run **Actions → Release → Run workflow**
 and is never committed or shipped.
 
 ## Credits
-Made by Argex, with AI assistance. Uses Script Hook V (Alexander Blade) and ScriptHookVDotNet Enhanced
+Made by zeitiv, with AI assistance. Uses Script Hook V (Alexander Blade) and ScriptHookVDotNet Enhanced
 (Chiheb-Bacha and the SHVDN team). The flight model follows Liftoff's behaviour; no code or assets from Liftoff or
 GTA V are included. [MIT license](LICENSE).
