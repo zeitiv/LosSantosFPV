@@ -1,0 +1,88 @@
+name: Release
+
+# Every push to main that changes the mod publishes a new GitHub Release with the next version number
+# (patch bump: v1.0.0 -> v1.0.1). Run it by hand (Actions -> Release -> Run workflow) to bump minor or major.
+# Add [skip release] to a commit message to push without releasing.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "release/**"
+      - "build-release.ps1"
+      - "LICENSE"
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Which part of the version to increase
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  SHVDN_VERSION: v1.1.0.6
+
+jobs:
+  release:
+    if: ${{ !contains(github.event.head_commit.message, '[skip release]') }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # tags, to find the last version
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Download ScriptHookVDotNet (reference only)
+        shell: pwsh
+        run: |
+          $url = "https://github.com/Chiheb-Bacha/ScriptHookVDotNetEnhanced/releases/download/$env:SHVDN_VERSION/ScriptHookVDotNetEnhanced-$env:SHVDN_VERSION.zip"
+          Invoke-WebRequest $url -OutFile shvdn.zip
+          Expand-Archive shvdn.zip -DestinationPath "$env:RUNNER_TEMP\shvdn"
+
+      - name: Tests
+        run: dotnet run --project tests -c Release
+
+      - name: Next version
+        id: version
+        shell: pwsh
+        run: |
+          $bump = "${{ github.event.inputs.bump }}"
+          if (-not $bump) { $bump = "patch" }
+          $last = git tag --list "v*" | Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } |
+                  Sort-Object { [version]$_.Substring(1) } -Descending | Select-Object -First 1
+          if (-not $last) {
+            $next = "1.0.0"
+          } else {
+            $v = [version]$last.Substring(1)
+            switch ($bump) {
+              "major" { $next = "$($v.Major + 1).0.0" }
+              "minor" { $next = "$($v.Major).$($v.Minor + 1).0" }
+              default { $next = "$($v.Major).$($v.Minor).$($v.Build + 1)" }
+            }
+          }
+          Write-Host "Last: $last  ->  next: $next ($bump)"
+          "version=$next" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Build package
+        id: build
+        shell: pwsh
+        run: ./build-release.ps1 -Version "${{ steps.version.outputs.version }}" -ShvdnDir "$env:RUNNER_TEMP\shvdn" -RepoUrl "${{ github.server_url }}/${{ github.repository }}"
+
+      - name: Publish GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $v = "${{ steps.version.outputs.version }}"
+          gh release create "v$v" "${{ steps.build.outputs.zip }}" --target "${{ github.sha }}" `
+            --title "Los Santos FPV $v" --generate-notes

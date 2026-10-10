@@ -1,0 +1,16 @@
+# build output
+bin/
+obj/
+dist/
+
+# third-party downloads and local backups (ScriptHookV / SHVDN must not be redistributed here)
+dl/
+backup/
+*.zip
+
+# local / editor
+.vs/
+.vscode/
+*.user
+*.log
+docs/SHVDN_API_full_dump.txt

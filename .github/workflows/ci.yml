@@ -1,0 +1,43 @@
+name: CI
+
+# Build + headless tests on every pull request and on pushes to branches other than main
+# (main is covered by the release workflow, which runs the same steps before publishing).
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+
+env:
+  # ScriptHookVDotNet Enhanced release to compile against (downloaded at build time, never committed).
+  SHVDN_VERSION: v1.1.0.6
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Download ScriptHookVDotNet (reference only)
+        shell: pwsh
+        run: |
+          $url = "https://github.com/Chiheb-Bacha/ScriptHookVDotNetEnhanced/releases/download/$env:SHVDN_VERSION/ScriptHookVDotNetEnhanced-$env:SHVDN_VERSION.zip"
+          Invoke-WebRequest $url -OutFile shvdn.zip
+          Expand-Archive shvdn.zip -DestinationPath "$env:RUNNER_TEMP\shvdn"
+          if (-not (Test-Path "$env:RUNNER_TEMP\shvdn\ScriptHookVDotNet3.dll")) { throw "ScriptHookVDotNet3.dll not in the archive" }
+
+      - name: Tests
+        run: dotnet run --project tests -c Release
+
+      - name: Build package
+        shell: pwsh
+        run: ./build-release.ps1 -Version "0.0.0-ci.${{ github.run_number }}" -ShvdnDir "$env:RUNNER_TEMP\shvdn" -RepoUrl "${{ github.server_url }}/${{ github.repository }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LosSantosFpv-ci-${{ github.run_number }}
+          path: dist/*.zip

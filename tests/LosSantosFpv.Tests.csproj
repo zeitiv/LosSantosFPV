@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Headless checks of the game-independent code (flight model, settings). Run with: dotnet run, from the tests folder -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../src/Flight.cs;../src/Tune.cs;../src/HidJoystick.cs;../src/Settings.cs;../src/MiniJson.cs;../src/Radio.cs" />
+  </ItemGroup>
+</Project>

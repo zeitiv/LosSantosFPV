@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>LosSantosFpv</AssemblyName>
+    <RootNamespace>LosSantosFpv</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PlatformTarget>x64</PlatformTarget>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>none</DebugType>
+    <!-- Release builds pass -p:Version=x.y.z (see build-release.ps1 and .github/workflows/release.yml). -->
+    <Version>1.0.0-dev</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Product>Los Santos FPV</Product>
+    <Description>Liftoff-style FPV drone for GTA V story mode, flown with an RC radio or gamepad (ScriptHookVDotNet v3).</Description>
+    <Copyright>Copyright (c) 2026 Argex</Copyright>
+
+    <!-- Where ScriptHookVDotNet3.dll is: your game folder by default; CI passes -p:ShvdnDir=<downloaded release>. -->
+    <GtaDir Condition="'$(GtaDir)' == ''">C:\Program Files\Rockstar Games\Grand Theft Auto V Enhanced</GtaDir>
+    <ShvdnDir Condition="'$(ShvdnDir)' == ''">$(GtaDir)</ShvdnDir>
+    <!-- Copy the built DLL into <GtaDir>\scripts after each build (off in CI). -->
+    <CopyToGame Condition="'$(CopyToGame)' == ''">true</CopyToGame>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ScriptHookVDotNet3">
+      <HintPath>$(ShvdnDir)\ScriptHookVDotNet3.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+
+  <Target Name="CheckShvdn" BeforeTargets="ResolveAssemblyReferences" Condition="!Exists('$(ShvdnDir)\ScriptHookVDotNet3.dll')">
+    <Error Text="ScriptHookVDotNet3.dll not found in '$(ShvdnDir)'. Pass -p:ShvdnDir=&lt;folder with ScriptHookVDotNet3.dll&gt; or -p:GtaDir=&lt;your GTA V folder&gt;." />
+  </Target>
+
+  <Target Name="CopyToGtaScripts" AfterTargets="Build" Condition="'$(CopyToGame)' == 'true' And Exists('$(GtaDir)\scripts')">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GtaDir)\scripts" SkipUnchangedFiles="false" ContinueOnError="true" />
+    <Message Importance="high" Text="LosSantosFpv: copied $(TargetFileName) -> $(GtaDir)\scripts" />
+  </Target>
+
+</Project>
